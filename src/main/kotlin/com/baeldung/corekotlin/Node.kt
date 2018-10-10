@@ -9,9 +9,9 @@ class Node(
      * Return a node with given value. If no such node exists, return null.
      * @param value
      */
-    fun findByValue(value: Int): Node? = when {
-        this.key > value -> left?.findByValue(value)
-        this.key < value -> right?.findByValue(value)
+    fun find(value: Int): Node? = when {
+        this.key > value -> left?.find(value)
+        this.key < value -> right?.find(value)
         else -> this
 
     }
@@ -38,78 +38,93 @@ class Node(
         }
     }
 
-    /**
-     * Remove the given value from the tree.
-     *
-     * After this operation the tree should contain no node with the value.
-     *
-     * If that value his not present, no action is performed.
-     *
-     * @param value
-     */
     fun delete(value: Int) {
-        deleteWithParent(value, this, null)
-
-    }
-
-    private fun deleteWithParent(value: Int, node: Node, parent: Node?) {
-        if (node.key > value) {
-            node.left?.let { deleteWithParent(value, it, this) }
-        } else if (node.key < value) {
-            node.right?.let { deleteWithParent(value, it, this) }
-        } else {
-            deleteNode(node, parent)
+        when {
+            value == key -> removeNode(this, null)
+            value > key -> scan(value, this.right, this)
+            value < key -> scan(value, this.left, this)
+            else -> throw RuntimeException("Should never enter here")
         }
     }
 
-    private fun deleteNode(node: Node, parent: Node?) {
-        val l = node.left
-        val r = node.right
+    private fun scan(value: Int, node: Node?, parent: Node?) {
+        if (node == null) {
+            System.out.println("value " + value
+                    + " seems not present in the tree.")
+            return
+        }
+        when {
+            value > node.key -> scan(value, node.right, node)
+            value < node.key -> scan(value, node.left, node)
+            value == node.key -> removeNode(node, parent)
+        }
+
+    }
+
+    private fun removeNode(node: Node, parent: Node?) {
+        node.left?.let { leftChild ->
+            run {
+                node.right?.let {
+                    removeTwoChildNode(node)
+                } ?: removeSingleChildNode(node, leftChild)
+            }
+        } ?: run {
+            node.right?.let { rightChild -> removeSingleChildNode(node, rightChild) } ?: removeNoChildNode(node, parent)
+        }
+
+
+    }
+
+    private fun removeNoChildNode(node: Node, parent: Node?) {
         if (parent == null) {
-            if (l == null && r == null) {
-                throw IllegalStateException("Can not remove the root node without children")
-            }
-            if (l != null && r == null) {
-                node.key = l.key
-                node.left = null
-            } else if (l == null && r != null) {
-                node.key = r.key
-                node.right = null
-            } else {
-                val n = nodeWithMaxChild(node)
-                node.key = n.key
-                n.right = null
-            }
-        } else {
-            if (l == null && r == null) {
-                if (parent.left?.key == node.key){
-                    parent.left = null
-                } else if (parent.right?.key == node.key){
-                    parent.right = null
-                } else {
-                    throw IllegalStateException("Parent does not contain the node")
-                }
-            } else if (l != null && r == null) {
-                node.key = l.key
-                node.left = null
-            } else if (l == null && r != null) {
-                node.key = r.key
-                node.right = null
-            } else {
-                val n = nodeWithMaxChild(node)
-                node.key = n.key
-                n.right = null
-            }
-
-
+            throw IllegalStateException(
+                    "Can not remove the root node without child nodes")
+        }
+        if (node == parent.left) {
+            parent.left = null
+        } else if (node == parent.right) {
+            parent.right = null
         }
     }
 
-    private fun nodeWithMaxChild(node: Node): Node {
+    private fun removeTwoChildNode(node: Node) {
+        System.out.println("Removing a node with two children: " + node.key)
+        val leftChild = node.left!!
+        leftChild.right?.let {
+            val maxParent = findParentOfMaxChild(node.left!!)
+            println("parent of max node ${node.left!!.key} -> ${maxParent.key}")
+            maxParent.right?.let {
+                node.key = it.key
+                maxParent.right = null
+            } ?: throw IllegalStateException("Node with max child must have the right child!")
 
-        return node.right?.let { r -> r.right?.let { nodeWithMaxChild(r) } ?: node }
-                ?: throw IllegalArgumentException("The argument must have a right child")
+        } ?: run {
+            node.key = leftChild.key
+            node.left = leftChild.left
+        }
+
     }
 
+    /**
+     * Return a node whose right child contains the biggest value in the given sub-tree.
+     * Assume that the node n has a non-null right child.
+     *
+     * @param n
+     */
+    private fun findParentOfMaxChild(n: Node): Node {
+        return n.right?.let { r -> r.right?.let { findParentOfMaxChild(r) } ?: n }
+                ?: throw IllegalArgumentException("Right child must be non-null")
+
+    }
+
+    private fun removeSingleChildNode(node: Node, child: Node) {
+        val k = child.key
+        val l = child.left
+        val r = child.right
+
+        node.key = k
+        node.left = l
+        node.right = r
+    }
 }
 

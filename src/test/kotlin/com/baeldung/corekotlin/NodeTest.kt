@@ -30,7 +30,7 @@ class NodeTest {
     @Test
     fun givenDepthZero_whenPivotNotPresent_thenNull() {
         val n = Node(1)
-        assertNull(n.findByValue(2))
+        assertNull(n.find(2))
     }
 
     /**
@@ -41,7 +41,7 @@ class NodeTest {
     @Test
     fun givenDepthZero_whenPivotDepthZero_thenReturnNodeItself() {
         val n = Node(1)
-        assertEquals(n, n.findByValue(1))
+        assertEquals(n, n.find(1))
     }
 
     /**
@@ -52,7 +52,7 @@ class NodeTest {
     @Test
     fun givenDepthOne_whenPivotNotPresent_thenNull() {
         val n = Node(1, Node(0))
-        assertNull(n.findByValue(2))
+        assertNull(n.find(2))
     }
 
     /**
@@ -63,7 +63,7 @@ class NodeTest {
     @Test
     fun givenDepthOne_whenPivotAtDepthOne_thenSuccess() {
         val n = Node(1, Node(0))
-        assertEquals(n.left, n.findByValue(0)
+        assertEquals(n.left, n.find(0)
         )
     }
 
@@ -72,7 +72,7 @@ class NodeTest {
         val left = Node(1, Node(0), Node(2))
         val right = Node(5, Node(4), Node(6))
         val n = Node(3, left, right)
-        assertEquals(left.left, n.findByValue(0))
+        assertEquals(left.left, n.find(0))
     }
 
 
@@ -290,7 +290,7 @@ class NodeTest {
             assertNull(right)
         }
         with(n.left!!) {
-            assertEquals(2, key)
+            assertEquals(1, key)
             assertNull(left)
             assertNull(right)
         }
@@ -298,21 +298,21 @@ class NodeTest {
 
     @Test
     fun givenTreeDepthThree_whenNodeToDeleteHasTwoChildren_thenChangeTree() {
-        val left = Node(2, Node(1), Node(5, Node(4), Node(6)))
-        val right = Node(10, Node(9), Node(11))
-        val n = Node(8, left, right)
+        val l = Node(2, Node(1), Node(5, Node(4), Node(6)))
+        val r = Node(10, Node(9), Node(11))
+        val n = Node(8, l, r)
         n.delete(8)
         assertEquals(6, n.key)
         with(n.left!!) {
             assertEquals(2, key)
-            assertEquals(1, left.key)
-            assertEquals(5, right.key)
-            assertEquals(4, right.left!!.key)
+            assertEquals(1, left!!.key)
+            assertEquals(5, right!!.key)
+            assertEquals(4, right!!.left!!.key)
         }
         with(n.right!!) {
             assertEquals(10, key)
-            assertEquals(9, left.key)
-            assertEquals(11, right.key)
+            assertEquals(9, left!!.key)
+            assertEquals(11, right!!.key)
         }
     }
 
