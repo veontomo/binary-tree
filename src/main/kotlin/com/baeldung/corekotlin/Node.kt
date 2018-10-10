@@ -118,13 +118,9 @@ class Node(
     }
 
     private fun removeSingleChildNode(node: Node, child: Node) {
-        val k = child.key
-        val l = child.left
-        val r = child.right
-
-        node.key = k
-        node.left = l
-        node.right = r
+        node.key = child.key
+        node.left = child.left
+        node.right = child.right
     }
 }
 
