@@ -44,10 +44,9 @@ class Node(
      */
     fun delete(value: Int) {
         when {
-            value == key -> removeNode(this, null)
             value > key -> scan(value, this.right, this)
             value < key -> scan(value, this.left, this)
-            else -> throw RuntimeException("Should never enter here")
+            else -> removeNode(this, null)
         }
     }
 
@@ -99,15 +98,15 @@ class Node(
      * @param parent
      */
     private fun removeNoChildNode(node: Node, parent: Node?) {
-        if (parent == null) {
-            throw IllegalStateException(
-                    "Can not remove the root node without child nodes")
-        }
-        if (node == parent.left) {
-            parent.left = null
-        } else if (node == parent.right) {
-            parent.right = null
-        }
+        parent?.let { p ->
+            if (node == p.left) {
+                p.left = null
+            } else if (node == p.right) {
+                p.right = null
+            }
+        } ?: throw IllegalStateException(
+                "Can not remove the root node without child nodes")
+
     }
 
     /**
@@ -119,7 +118,7 @@ class Node(
     private fun removeTwoChildNode(node: Node) {
         val leftChild = node.left!!
         leftChild.right?.let {
-            val maxParent = findParentOfMaxChild(node.left!!)
+            val maxParent = findParentOfMaxChild(leftChild)
             maxParent.right?.let {
                 node.key = it.key
                 maxParent.right = null
@@ -154,6 +153,12 @@ class Node(
         parent.key = child.key
         parent.left = child.left
         parent.right = child.right
+    }
+
+    fun visit(): Array<Int> {
+        val a = left?.visit() ?: emptyArray()
+        val b = right?.visit() ?: emptyArray()
+        return a + arrayOf(key) + b
     }
 }
 
